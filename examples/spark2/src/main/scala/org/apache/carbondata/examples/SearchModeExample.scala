@@ -73,24 +73,23 @@ object SearchModeExample {
          | OPTIONS('HEADER'='true', 'COMPLEX_DELIMITER_LEVEL_1'='#')
        """.stripMargin)
 
-    spark.sql("select count(*) from carbonsession_table").show()
     val pool = Executors.newCachedThreadPool()
 
-    // start search mode (start all gRPC server)
-    // following queries will be run using gRPC
+    // start search mode
     spark.asInstanceOf[CarbonSession].startSearchMode()
-
-    println("search mode synchronous query")
-    org.apache.spark.sql.catalyst.util.benchmark {
-      runSynchrousSQL(spark, 100)
-    }
+    runAsynchrousSQL(spark, pool, 1)
 
     println("search mode asynchronous query")
     org.apache.spark.sql.catalyst.util.benchmark {
       runAsynchrousSQL(spark, pool, 100)
     }
 
-    // stop gRPC servers
+    println("search mode synchronous query")
+    org.apache.spark.sql.catalyst.util.benchmark {
+      runSynchrousSQL(spark, 100)
+    }
+
+    // stop search mode
     spark.asInstanceOf[CarbonSession].stopSearchMode()
 
     println("sparksql asynchronous query")
@@ -103,8 +102,7 @@ object SearchModeExample {
       runSynchrousSQL(spark, 100)
     }
 
-    // start search mode (start all gRPC server)
-    // following queries will be run using gRPC
+    // start search mode again
     spark.asInstanceOf[CarbonSession].startSearchMode()
 
     println("search mode asynchronous query")
@@ -113,6 +111,19 @@ object SearchModeExample {
     }
 
     println("search mode synchronous query")
+    org.apache.spark.sql.catalyst.util.benchmark {
+      runSynchrousSQL(spark, 100)
+    }
+
+    // stop search mode
+    spark.asInstanceOf[CarbonSession].stopSearchMode()
+
+    println("sparksql asynchronous query")
+    org.apache.spark.sql.catalyst.util.benchmark {
+      runAsynchrousSQL(spark, pool, 100)
+    }
+
+    println("sparksql synchronous query")
     org.apache.spark.sql.catalyst.util.benchmark {
       runSynchrousSQL(spark, 100)
     }

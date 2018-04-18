@@ -18,7 +18,6 @@
 package org.apache.carbondata.store.worker;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +43,6 @@ import org.apache.carbondata.hadoop.CarbonMultiBlockSplit;
 import org.apache.carbondata.hadoop.CarbonRecordReader;
 import org.apache.carbondata.hadoop.readsupport.impl.CarbonRowReadSupport;
 
-import org.apache.spark.search.EchoRequest;
-import org.apache.spark.search.EchoResponse;
 import org.apache.spark.search.SearchRequest;
 import org.apache.spark.search.SearchResult;
 import org.apache.spark.search.ShutdownRequest;
@@ -59,13 +56,6 @@ public class SearchRequestHandler {
 
   private static final LogService LOG =
       LogServiceFactory.getLogService(SearchRequestHandler.class.getName());
-
-  public EchoResponse handleEcho(EchoRequest request) {
-    LOG.info("echo from master: " + request.message());
-    EchoResponse response = new EchoResponse("welcome");
-    LOG.info("echo to master: " + response.message());
-    return response;
-  }
 
   public SearchResult handleSearch(SearchRequest request) {
     try {

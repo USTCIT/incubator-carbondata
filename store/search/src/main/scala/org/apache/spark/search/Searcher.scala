@@ -41,10 +41,6 @@ class Searcher(override val rpcEnv: RpcEnv) extends RpcEndpoint {
       val response = new SearchRequestHandler().handleSearch(req)
       context.reply(response)
 
-    case req@EchoRequest(_) =>
-      val response = new SearchRequestHandler().handleEcho(req)
-      context.reply(response)
-
     case req@ShutdownRequest(_) =>
       val response = new SearchRequestHandler().handleShutdown(req)
       context.reply(response)
@@ -78,12 +74,4 @@ case class ShutdownRequest(
 // Shutdown response sent from worker to master
 case class ShutdownResponse(
     status: Int,
-    message: String)
-
-// Echo request (for test) sent from master to worker
-case class EchoRequest(
-    message: String)
-
-// Echo response sent from worker to master
-case class EchoResponse(
     message: String)

@@ -87,7 +87,10 @@ class Master(sparkConf: SparkConf, port: Int) {
   }
 
   def stopService(): Unit = {
-    if (rpcEnv != null) rpcEnv.shutdown()
+    if (rpcEnv != null) {
+      rpcEnv.shutdown()
+      rpcEnv = null
+    }
   }
 
   def stopAllWorkers(): Unit = {
@@ -96,9 +99,13 @@ class Master(sparkConf: SparkConf, port: Int) {
     }
     futures.foreach { case (hostname, future) =>
       ThreadUtils.awaitResult(future, Duration.apply("10s"))
-      future.onComplete {
-        case Success(response) => workers.remove(hostname)
-        case Failure(throwable) => throw new IOException(throwable.getMessage)
+      future.value match {
+        case Some(result) =>
+          result match {
+            case Success(response) => workers.remove(hostname)
+            case Failure(throwable) => throw new IOException(throwable.getMessage)
+          }
+        case None => throw new ExecutionTimeoutException
       }
     }
   }
@@ -119,19 +126,6 @@ class Master(sparkConf: SparkConf, port: Int) {
     LOG.info(s"worker ${request.hostname}:${request.port} added")
     RegisterWorkerResponse(workerId)
   }
-
-//  private def tryEcho(stub: Nothing): Unit = {
-//    val request = EchoRequest.newBuilder.setMessage("hello").build
-//    Master.LOG.info("echo to searcher: " + request.getMessage)
-//    val response = stub.echo(request)
-//    try
-//      Master.LOG.info("echo from searcher: " + response.get.getMessage)
-//    catch {
-//      case e@(_: InterruptedException | _: ExecutionException) =>
-//        Master.LOG.error("failed to echo: " + e.getMessage)
-//        throw e
-//    }
-//  }
 
   private def getEndpoint(workerIP: String) = workers(workerIP)
 
